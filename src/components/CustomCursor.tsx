@@ -6,10 +6,28 @@ import { useEffect, useState, useRef } from 'react'
 export default function CustomCursor() {
   const [position, setPosition] = useState({ x: -100, y: -100 })
   const [isHovered, setIsHovered] = useState(false)
+  const [isMobile, setIsMobile] = useState<boolean | null>(null)
   const posRef = useRef({ x: -100, y: -100 })
   const requestRef = useRef<number | null>(null)
 
   useEffect(() => {
+    // Precise touch + screen check after component mounts on client
+    const checkMobile = () => {
+      const hasTouch = window.matchMedia('(pointer: coarse)').matches
+      const isSmallScreen = window.innerWidth < 768
+      return hasTouch || isSmallScreen
+    }
+
+    if (checkMobile()) {
+      setIsMobile(true)
+      return
+    }
+
+    setIsMobile(false)
+
+    // Hide standard system cursor on desktop
+    document.body.style.cursor = 'none'
+
     const updateCursor = (e: MouseEvent) => {
       posRef.current = { x: e.clientX, y: e.clientY }
     }
@@ -32,7 +50,6 @@ export default function CustomCursor() {
     // Smooth render loop using requestAnimationFrame
     const loop = () => {
       setPosition((prev) => {
-        // Linear interpolation for ultra-smooth tracking
         const dx = posRef.current.x - prev.x
         const dy = posRef.current.y - prev.y
         return {
@@ -48,11 +65,16 @@ export default function CustomCursor() {
     requestRef.current = requestAnimationFrame(loop)
 
     return () => {
+      // Re-enable native cursor when component unmounts
+      document.body.style.cursor = 'auto'
       window.removeEventListener('mousemove', updateCursor)
       window.removeEventListener('mouseover', handleMouseOver)
       if (requestRef.current) cancelAnimationFrame(requestRef.current)
     }
   }, [])
+
+  // Do not render anything on mobile screens or before mounted
+  if (isMobile === true || isMobile === null) return null
 
   return (
     <div
