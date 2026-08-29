@@ -14,11 +14,39 @@ export function useCheckout() {
   const [submitting, setSubmitting] = useState(false)
   const [checkoutError, setCheckoutError] = useState(null)
 
+  // 1. Force sync cached cart state with fresh Medusa backend totals on mount
+  useEffect(() => {
+    async function syncCachedCart() {
+      if (!cart?.id) return
+      try {
+        const { cart: freshCart } = await medusaClient.store.cart.retrieve(cart.id)
+        if (freshCart) {
+          setCart(freshCart)
+        }
+      } catch (err) {
+        console.warn('Could not sync fresh cart totals:', err)
+      }
+    }
+
+    syncCachedCart()
+  }, [cart?.id])
+
+  // 2. Initialize fulfillment options safely without wiping existing shipping/discount calculations
   useEffect(() => {
     async function initShippingOptions() {
       if (!cart?.id) return
+
+      // PRESERVE EXISTING PROMOS: If shipping & discounts are already attached, skip re-querying
+      if (cart.shipping_methods?.length > 0 && cart.discount_total > 0) {
+        setSelectedShippingOption(
+          cart.shipping_methods[0].shipping_option_id || cart.shipping_methods[0].id
+        )
+        return
+      }
+
       try {
         setLoadingShipping(true)
+
         const { shipping_options } = await medusaClient.store.fulfillment.listCartOptions({
           cart_id: cart.id,
         })
@@ -26,16 +54,19 @@ export function useCheckout() {
         const options = shipping_options || []
         setShippingOptions(options)
 
-        if (options.length > 0) {
+        // STRICT GUARD: Only call addShippingMethod if NO shipping method exists on the cart
+        if (options.length > 0 && (!cart.shipping_methods || cart.shipping_methods.length === 0)) {
           const defaultOptionId = options[0].id
           setSelectedShippingOption(defaultOptionId)
 
-          if (!cart.shipping_methods || cart.shipping_methods.length === 0) {
-            const { cart: updatedCart } = await medusaClient.store.cart.addShippingMethod(cart.id, {
-              option_id: defaultOptionId,
-            })
-            setCart(updatedCart)
-          }
+          const { cart: updatedCart } = await medusaClient.store.cart.addShippingMethod(cart.id, {
+            option_id: defaultOptionId,
+          })
+          setCart(updatedCart)
+        } else if (cart.shipping_methods?.length > 0) {
+          setSelectedShippingOption(
+            cart.shipping_methods[0].shipping_option_id || cart.shipping_methods[0].id
+          )
         }
       } catch (err) {
         console.warn('Could not fetch dynamic shipping options:', err)
@@ -64,12 +95,15 @@ export function useCheckout() {
     if (!cart?.id) return { success: false, message: 'No active cart found' }
     try {
       const { cart: updatedCart } = await medusaClient.store.cart.update(cart.id, {
-        promo_codes: [code],
+        promo_codes: [code.trim()],
       })
       setCart(updatedCart)
       return { success: true }
     } catch (err) {
-      return { success: false, message: err?.message || 'Invalid promotion code' }
+      return { 
+        success: false, 
+        message: err?.response?.data?.message || err?.message || 'Invalid promo code for this item combination.' 
+      }
     }
   }
 
@@ -86,6 +120,7 @@ export function useCheckout() {
       const cleanEmail = (formData.email || '').trim().toLowerCase()
       const cleanPhone = (formData.phone || '').trim()
 
+      // 1. Update customer address details FIRST
       let { cart: updatedCart } = await medusaClient.store.cart.update(cart.id, {
         email: cleanEmail,
         shipping_address: {
@@ -106,22 +141,22 @@ export function useCheckout() {
         },
       })
 
+      // 2. Ensure shipping is attached
       let targetShippingOptionId = selectedShippingOption
-
       if (!targetShippingOptionId) {
-        const { shipping_options } = await medusaClient.store.fulfillment.listCartOptions({
-          cart_id: updatedCart.id,
-        })
-        if (shipping_options?.length > 0) {
-          targetShippingOptionId = shipping_options[0].id
+        try {
+          const { shipping_options } = await medusaClient.store.fulfillment.listCartOptions({
+            cart_id: updatedCart.id,
+          })
+          if (shipping_options?.length > 0) {
+            targetShippingOptionId = shipping_options[0].id
+          }
+        } catch (err) {
+          console.warn('Shipping options lookup failed:', err)
         }
       }
 
-      if (!targetShippingOptionId) {
-        throw new Error('No valid shipping methods available for the provided address in Medusa Admin.')
-      }
-
-      if (!updatedCart.shipping_methods || updatedCart.shipping_methods.length === 0) {
+      if (targetShippingOptionId && (!updatedCart.shipping_methods || updatedCart.shipping_methods.length === 0)) {
         const { cart: cartWithShipping } = await medusaClient.store.cart.addShippingMethod(updatedCart.id, {
           option_id: targetShippingOptionId,
         })
@@ -129,28 +164,18 @@ export function useCheckout() {
         setCart(updatedCart)
       }
 
-      try {
-        await medusaClient.store.payment.initiatePaymentSession(updatedCart, {
-          provider_id: 'pp_system_default',
-        })
-      } catch (payErr) {
-        console.warn('Payment session bypassed or default accepted:', payErr)
-      }
-
-      // Format payload directly using Medusa's computed cart totals
+      // 3. Build & Save Metadata BEFORE Payment Session
       const orderItems = updatedCart.items || []
-      const itemSummary = orderItems
-        .map((item) => {
-          const selectedScents = item.metadata?.selected_scents || item.metadata?.all_bundle_scents
-          const scentDetails = selectedScents ? ` [Scents: ${selectedScents}]` : ''
-          return `${item.title}${scentDetails} (x${item.quantity})`
-        })
-        .join(' | ')
-
-      const subtotalVal = updatedCart.subtotal ?? 0
-      const discountVal = updatedCart.discount_total ?? 0
+      const trueSubtotal = orderItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0)
       const shippingVal = updatedCart.shipping_total ?? 0
-      const totalVal = updatedCart.total ?? (subtotalVal + shippingVal - discountVal)
+      const discountVal = updatedCart.discount_total ?? 0
+      const totalVal = updatedCart.total ?? (trueSubtotal + shippingVal - discountVal)
+
+      const itemSummary = orderItems.map((item) => {
+        const selectedScents = item.metadata?.selected_scents || item.metadata?.all_bundle_scents
+        const scentDetails = selectedScents ? ` [Scents: ${selectedScents}]` : ''
+        return `${item.title}${scentDetails} (x${item.quantity})`
+      }).join(' | ')
 
       const makePayload = {
         customer_name: `${formData.firstName} ${formData.lastName}`,
@@ -158,13 +183,13 @@ export function useCheckout() {
         customer_phone: cleanPhone,
         address: `${formData.address}, ${formData.city}`,
         items: itemSummary,
-        subtotal: `PKR ${Math.round(subtotalVal)}`,
+        subtotal: `PKR ${Math.round(trueSubtotal)}`,
         discount: `PKR ${Math.round(discountVal)}`,
         shipping_fee: shippingVal === 0 ? 'FREE' : `PKR ${Math.round(shippingVal)}`,
         total_price: `PKR ${Math.round(totalVal)}`,
       }
 
-      await medusaClient.store.cart.update(updatedCart.id, {
+      const { cart: finalCart } = await medusaClient.store.cart.update(updatedCart.id, {
         metadata: {
           ...updatedCart.metadata,
           make_payload: makePayload,
@@ -174,24 +199,40 @@ export function useCheckout() {
           total_price: makePayload.total_price,
         },
       })
+      updatedCart = finalCart
 
+      // 4. Initiate Payment Session NOW (Cart is fully locked)
+      try {
+        const paymentRes = await medusaClient.store.payment.initiatePaymentSession(
+          updatedCart,
+          { provider_id: 'pp_system_default' }
+        )
+        if (paymentRes?.cart) {
+          updatedCart = paymentRes.cart
+        }
+      } catch (payErr) {
+        console.warn('Direct payment session init failed, attempting collection creation:', payErr)
+        try {
+          const { cart: paymentCart } = await medusaClient.store.cart.update(updatedCart.id, {
+            payment_collection: { providers: ['pp_system_default'] },
+          })
+          updatedCart = paymentCart
+        } catch (fallbackErr) {
+          console.error('Payment collection fallback failed:', fallbackErr)
+        }
+      }
+
+      // 5. Complete Order
       const response = await medusaClient.store.cart.complete(updatedCart.id)
 
       if (response?.type === 'order' && response?.order) {
         const order = response.order
-
         try {
-          const webhookUrl =
-            import.meta.env.VITE_MAKE_WEBHOOK_URL ||
-            'https://hook.eu1.make.com/6gf7i0sw663t5nt615wqj72ac7lx29jx'
-
+          const webhookUrl = import.meta.env.VITE_MAKE_WEBHOOK_URL || 'https://hook.eu1.make.com/6gf7i0sw663t5nt615wqj72ac7lx29jx'
           await fetch(webhookUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              order_id: order.display_id || order.id,
-              ...makePayload,
-            }),
+            body: JSON.stringify({ order_id: order.display_id || order.id, ...makePayload }),
           })
         } catch (webhookErr) {
           console.error('Make.com Webhook Failed silently:', webhookErr)
@@ -199,10 +240,7 @@ export function useCheckout() {
 
         localStorage.removeItem('medusa_cart_id')
         await createFreshCart()
-
-        navigate(`/order/confirmed/${order.id}`, {
-          state: { order, makePayload },
-        })
+        navigate(`/order/confirmed/${order.id}`, { state: { order, makePayload } })
       } else {
         throw new Error(response?.error?.message || 'Cart completion failed.')
       }

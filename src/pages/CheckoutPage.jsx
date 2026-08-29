@@ -1,6 +1,6 @@
 // src/pages/CheckoutPage.jsx
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useCheckout } from '../hooks/useCheckout'
 
@@ -111,11 +111,10 @@ export default function CheckoutPage() {
   }
 
   const cartItems = cart?.items ?? []
-  const subtotal = cart?.subtotal ?? 0
-  const shippingTotal = cart?.shipping_total ?? 0
-  const discountTotal = cart?.discount_total ?? 0
-  const grandTotal = cart?.total ?? (subtotal + shippingTotal - discountTotal)
-
+const subtotal = cartItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0)
+const shippingTotal = cart?.shipping_total ?? 0
+const discountTotal = cart?.discount_total ?? 0
+const grandTotal = cart?.total ?? (subtotal + shippingTotal - discountTotal)
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 font-sans">
       <h1 className="text-3xl font-black text-black uppercase tracking-tight mb-8">Checkout</h1>
