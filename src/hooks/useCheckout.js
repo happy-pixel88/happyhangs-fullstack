@@ -14,70 +14,95 @@ export function useCheckout() {
   const [submitting, setSubmitting] = useState(false)
   const [checkoutError, setCheckoutError] = useState(null)
 
-  // 1. Force sync cached cart state with fresh Medusa backend totals on mount
+  /// src/hooks/useCheckout.js
+
+// 1. Force sync cart with full line-item metadata relations
+// src/hooks/useCheckout.js
+
+  // src/hooks/useCheckout.js
+
   useEffect(() => {
-    async function syncCachedCart() {
+    async function bruteForceCheckoutState() {
       if (!cart?.id) return
-      try {
-        const { cart: freshCart } = await medusaClient.store.cart.retrieve(cart.id)
-        if (freshCart) {
-          setCart(freshCart)
-        }
-      } catch (err) {
-        console.warn('Could not sync fresh cart totals:', err)
-      }
-    }
-
-    syncCachedCart()
-  }, [cart?.id])
-
-  // 2. Initialize fulfillment options safely without wiping existing shipping/discount calculations
-  useEffect(() => {
-    async function initShippingOptions() {
-      if (!cart?.id) return
-
-      // PRESERVE EXISTING PROMOS: If shipping & discounts are already attached, skip re-querying
-      if (cart.shipping_methods?.length > 0 && cart.discount_total > 0) {
-        setSelectedShippingOption(
-          cart.shipping_methods[0].shipping_option_id || cart.shipping_methods[0].id
-        )
-        return
-      }
 
       try {
         setLoadingShipping(true)
 
+        // 1. Always grab the absolute truth from the server first
+        const { cart: serverCart } = await medusaClient.store.cart.retrieve(cart.id, {
+          fields: '*items,*promotions,*shipping_methods,subtotal,shipping_total,discount_total,total',
+        })
+
+        // 2. DETECT THE EXACT CURSED EDGE CASE
+        // 2 items total, exactly 1 quantity each (Single Diffuser + Single Refill/Resin)
+        const isCursedMixedCart = serverCart.items?.length === 2 && 
+                                  serverCart.items[0].quantity === 1 && 
+                                  serverCart.items[1].quantity === 1
+
+        if (isCursedMixedCart) {
+          console.warn('Mixed 1x1 cart detected. Forcing Medusa double-calculation bypass...')
+          
+          const { shipping_options } = await medusaClient.store.fulfillment.listCartOptions({
+            cart_id: serverCart.id,
+          })
+          
+          if (shipping_options && shipping_options.length > 0) {
+            const targetId = shipping_options[0].id
+            
+            // STRIKE 1: Medusa might drop the discount here because of collection isolation
+            await medusaClient.store.cart.addShippingMethod(serverCart.id, {
+              option_id: targetId,
+            })
+            
+            // STRIKE 2: The Double-Tap. Force Medusa to re-evaluate the promo engine 
+            // now that the shipping method is actively bound to the cart context.
+            const { cart: finalForcedCart } = await medusaClient.store.cart.addShippingMethod(serverCart.id, {
+              option_id: targetId,
+            })
+            
+            setSelectedShippingOption(targetId)
+            setCart(finalForcedCart)
+            return // Abort the rest of the standard logic
+          }
+        }
+
+        // --- 3. STANDARD LOGIC FOR EVERYTHING ELSE (Bundles, Packs, >3 Items, etc.) ---
+        
+        if (serverCart.shipping_methods && serverCart.shipping_methods.length > 0) {
+          const activeMethodId = serverCart.shipping_methods[0].shipping_option_id || serverCart.shipping_methods[0].id
+          setSelectedShippingOption(activeMethodId)
+          setCart(serverCart) 
+          return 
+        }
+
         const { shipping_options } = await medusaClient.store.fulfillment.listCartOptions({
-          cart_id: cart.id,
+          cart_id: serverCart.id,
         })
 
         const options = shipping_options || []
         setShippingOptions(options)
 
-        // STRICT GUARD: Only call addShippingMethod if NO shipping method exists on the cart
-        if (options.length > 0 && (!cart.shipping_methods || cart.shipping_methods.length === 0)) {
+        if (options.length > 0) {
           const defaultOptionId = options[0].id
           setSelectedShippingOption(defaultOptionId)
 
-          const { cart: updatedCart } = await medusaClient.store.cart.addShippingMethod(cart.id, {
+          const { cart: updatedCart } = await medusaClient.store.cart.addShippingMethod(serverCart.id, {
             option_id: defaultOptionId,
           })
           setCart(updatedCart)
-        } else if (cart.shipping_methods?.length > 0) {
-          setSelectedShippingOption(
-            cart.shipping_methods[0].shipping_option_id || cart.shipping_methods[0].id
-          )
+        } else {
+          setCart(serverCart)
         }
+
       } catch (err) {
-        console.warn('Could not fetch dynamic shipping options:', err)
+        console.error('Error initializing checkout state:', err)
       } finally {
         setLoadingShipping(false)
       }
     }
 
-    initShippingOptions()
+    bruteForceCheckoutState()
   }, [cart?.id])
-
   const selectShippingMethod = async (optionId) => {
     if (!cart?.id || !optionId) return
     try {
