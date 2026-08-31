@@ -34,7 +34,7 @@ export const homepageSections = [
   },
   {
     id: 'Balls',
-    heading: 'DA BOSS CAN SOCK ME',
+    heading: 'Scented CedarWood Balls',
     subheading: 'Keep pests away with our naturally formulated protective diffusers.',
     collectionId: 'pcol_YOUR_ACTUAL_BALLS_MEDUSA_ID', // Replace with your real pcol_ ID
     viewAllLink: '/catalog?collection=pcol_YOUR_ACTUAL_BALLS_MEDUSA_ID',

@@ -2,7 +2,16 @@
 
 export const BUNDLE_CONFIGS = {
   // Key = Bundle Product Handle in Medusa
-  'bundle-of-4': {
+  'HAPPYHANGS SAVINGS BUNDLE(BOX OF 5)': {
+    slots: [
+      { label: 'Select Item 1', collectionId: 'pcol_01KZX9K89HP4P59C4Y05WVR51N' },
+      { label: 'Select Item 2', collectionId: 'pcol_01KZX9K89HP4P59C4Y05WVR51N' },
+      { label: 'Select Item 3', collectionId: 'pcol_01KZX9K89HP4P59C4Y05WVR51N' },
+      { label: 'Select Item 4', collectionId: 'pcol_01KZX9K89HP4P59C4Y05WVR51N' },
+       { label: 'Select Item 5', collectionId: 'pcol_01KZX9K89HP4P59C4Y05WVR51N' },
+    ],
+  },
+  'PREMIUM BUNDLE(BOX OF 4)': {
     slots: [
       { label: 'Select Item 1', collectionId: 'pcol_01KZX9K89HP4P59C4Y05WVR51N' },
       { label: 'Select Item 2', collectionId: 'pcol_01KZX9K89HP4P59C4Y05WVR51N' },
@@ -11,6 +20,15 @@ export const BUNDLE_CONFIGS = {
     ],
   },
   'bundle-for-him': {
+    slots: [
+      
+      { label: 'Select Item 1', collectionId: 'pcol_01KZX9K89HP4P59C4Y05WVR51N' },
+      { label: 'Select Item 2', collectionId: 'pcol_01KZX9K89HP4P59C4Y05WVR51N' },
+      { label: 'Select Item 3', collectionId: 'pcol_01KZX9K89HP4P59C4Y05WVR51N' },
+      { label: 'Select Item 4', collectionId: 'pcol_01M032DM5DFZCNJ8KYE5GXZJNT' },
+    ],
+  },
+    'bundle-for-her': {
     slots: [
       
       { label: 'Select Item 1', collectionId: 'pcol_01KZX9K89HP4P59C4Y05WVR51N' },
