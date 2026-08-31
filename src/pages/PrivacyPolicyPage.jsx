@@ -7,7 +7,7 @@ export default function PrivacyPolicyPage() {
       <p className="text-xs text-[#5c6869] mb-6">Last updated: August 3, 2026</p>
       
       <div className="space-y-4 text-sm leading-relaxed text-[#4a5758] whitespace-pre-line">
-        {`HappyHangs operates this store and website, including all related information, content, features, tools, products and services, in order to provide you, the customer, with a curated shopping experience (the "Services"). HappyHangs is powered by Shopify, which enables us to provide the Services to you. This Privacy Policy describes how we collect, use, and disclose your personal information when you visit, use, or make a purchase or other transaction using the Services or otherwise communicate with us.
+        {`
 
 Please read this Privacy Policy carefully. By using and accessing any of the Services, you acknowledge that you have read this Privacy Policy and understand the collection, use, and disclosure of your information as described in this Privacy Policy.
 
@@ -22,7 +22,7 @@ How We Use Your Personal Information
 We use your personal information to provide and improve the Services, fulfill orders, process payments, facilitate shipping and returns, send marketing communications, prevent fraud, and comply with applicable legal obligations.
 
 Contact
-Should you have any questions about our privacy practices or this Privacy Policy, please email us at happyhangs45@gmail.com or contact us at PHA F Apartments G 10/2 Islamabad, Islamabad 44100, Pakistan.`}
+Should you have any questions about our privacy practices or this Privacy Policy, please email us at happyhangs45@gmail.com `}
       </div>
     </div>
   )

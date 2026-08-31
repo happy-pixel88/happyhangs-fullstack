@@ -138,13 +138,14 @@ const grandTotal = cart?.total ?? (subtotal + shippingTotal - discountTotal)
               <div>
                 <label className="block text-xs font-bold uppercase mb-1">Email Address</label>
                 <input
-                  type="email"
+                  type="text"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  placeholder="happyhangs45@gmail.com"
+                  placeholder="happyhangs45@gmail.com-write this email if you dont want to enter your email"
                   className="w-full border-2 border-black p-3 font-medium focus:outline-none focus:ring-2 focus:ring-black"
                 />
+                
                 {validationErrors.email && (
                   <p className="text-red-600 text-xs font-bold mt-1">{validationErrors.email}</p>
                 )}
