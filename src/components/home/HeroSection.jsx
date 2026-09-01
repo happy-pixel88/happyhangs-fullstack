@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom' // Import Link from react-router-dom
 
 export default function HeroSection() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   const images = [
     'https://pub-f1b005fa8b8d40d390923f38752ae035.r2.dev/web9.jpeg',
-    'https://pub-f1b005fa8b8d40d390923f38752ae035.r2.dev/home11.jpeg',
+    'https://pub-f1b005fa8b8d40d390923f38752ae035.r2.dev/home12.jpeg',
   ]
 
   const marqueeItems = [
@@ -55,12 +56,14 @@ export default function HeroSection() {
             <p className="mt-4 text-base md:text-lg text-gray-100 font-light leading-relaxed">
               Discover an accessible lifestyle brand that transforms vehicle interiors and indoor space through sensory design and high quality, long-lasting fragrances.
             </p>
-            <a
-              href="#catalog"
+
+            {/* Updated CTA to route to /catalog */}
+            <Link
+              to="/catalog"
               className="mt-8 inline-block bg-black text-white text-sm font-medium px-8 py-3.5 rounded-xl hover:bg-neutral-800 transition-colors duration-200 shadow-md"
             >
               Shop now
-            </a>
+            </Link>
           </div>
         </div>
 
