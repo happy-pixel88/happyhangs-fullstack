@@ -329,7 +329,7 @@ export default function MidPageFeature({ r2ImageUrl }) {
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-stretch">
           <div className="md:col-span-5 relative w-full aspect-4/3 sm:aspect-square md:aspect-auto md:h-full min-h-[300px] md:min-h-[520px] rounded-none overflow-hidden border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
             <img
-              src={'https://pub-f1b005fa8b8d40d390923f38752ae035.r2.dev/web6.jpeg'}
+              src={'https://pub-f1b005fa8b8d40d390923f38752ae035.r2.dev/collect1.jpeg'}
               alt="HappyHangs Atmosphere"
               className="w-full h-full object-cover object-center"
             />
