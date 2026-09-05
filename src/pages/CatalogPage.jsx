@@ -25,7 +25,7 @@ export default function CatalogPage() {
 
   // 3. Fetch products using the resolved collection ID
   const { products, loading, error } = useMedusaProducts({
-    limit: 20,
+    limit: 200,
     currency_code: 'pkr',
     ...(collectionId && collectionId !== 'all' ? { collection_id: [collectionId] } : {}),
   })
