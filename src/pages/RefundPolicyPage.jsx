@@ -26,8 +26,6 @@ export default function RefundPolicyPage() {
 
 <p><strong>Refund Processing Timelines:</strong></p>
 <p>• After we receive the item, it is reviewed and verified. Once verified, your payment is reversed to you as soon as verification is completed.</p>
-<p>• Approved refunds for online payments (Credit/Debit Card via Safepay) will be processed back to the original payment method used during checkout.</p>
-<p>• Card refunds typically take 5 to 10 business days to reflect in your bank account, depending on your card-issuing bank's processing cycles.</p>
 <p>• Delivery/shipping charges are non-refundable unless the return is due to an error on our part (e.g., damaged or incorrect product).</p>
       </div>
     </div>
