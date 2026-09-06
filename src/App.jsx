@@ -1,5 +1,5 @@
-import React from 'react'
-import { Routes, Route } from 'react-router-dom'
+import React, { useEffect } from 'react'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import MainLayout from './components/layout/MainLayout'
 import { CartProvider } from './context/CartContext'
 import { homepageSections } from './config/sectionsConfig'
@@ -18,7 +18,17 @@ import TermsPage from './pages/TermPage'
 import ContactUsPage from './pages/ContactUsPage'
 import ShippingPolicy from './pages/ShippingPolicy'
 import LegalNotice from './pages/LegalNotice'
+
 export default function App() {
+  const location = useLocation()
+
+  // Dynamic Meta Pixel PageView tracking on route change
+  useEffect(() => {
+    if (window.fbq) {
+      window.fbq('track', 'PageView')
+    }
+  }, [location])
+
   // Dynamically derive header categories straight from sectionsConfig.js
   const categories = homepageSections.map((s, index) => {
     const title = s?.heading || s?.title || s?.name || 'Collection'
@@ -50,7 +60,7 @@ export default function App() {
           <Route path="/policies/privacy" element={<PrivacyPolicyPage />} />
           <Route path="/policies/refund" element={<RefundPolicyPage />} />
           <Route path="/policies/terms" element={<TermsPage />} />
-           <Route path="/policies/contactinformation" element={<ContactInformation />} />
+          <Route path="/policies/contactinformation" element={<ContactInformation />} />
           <Route path="/policies/shipping" element={<ShippingPolicy />} />
           <Route path="/policies/legal" element={<LegalNotice />} />
         </Routes>
