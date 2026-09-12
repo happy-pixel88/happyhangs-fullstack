@@ -52,7 +52,7 @@ export default function CatalogPage() {
           Our Collection
         </h1>
         <p className="text-black font-medium">
-          Explore our full range of cedarwood balls, refills, and scented bundles.
+          Explore our full range of Scent Diffusers,Air Fresheners,Scent Cedar Wood,Scent Refills and Premium Bundles.
         </p>
       </div>
 
