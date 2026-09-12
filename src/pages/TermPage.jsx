@@ -25,10 +25,8 @@ You agree to provide current, complete, and accurate purchase and account inform
 4. Pricing and Product Availability:
 Prices for our products are subject to change without notice. We reserve the right at any time to modify or discontinue any product or service without notice. We shall not be liable to you or to any third party for any modification, price change, suspension, or discontinuance of the service.
 </p><p>
-5. Third-Party Payment Processing:
-All online card payments on HappyHangs are processed securely through regulated third-party payment gateways (including Safepay). We do not store, view, or hold sensitive cardholder data on our servers.
 </p><p>
-6. Governing Law:
+5. Governing Law:
 These Terms of Service and any separate agreements whereby we provide you services shall be governed by and construed in accordance with the laws of the Islamic Republic of Pakistan.</p>
         <p>
           By visiting our site or purchasing from HappyHangs, you engage in our Service and agree to be bound by the following terms and conditions.

@@ -13,7 +13,6 @@ Please read this Privacy Policy carefully. By using and accessing any of the Ser
 
 Personal Information We Collect or Process
 Contact details including your name, address, billing address, shipping address, phone number, and email address.
-Financial information including credit card, debit card, and financial account numbers, transaction details, and payment confirmation.
 Transaction information including items viewed, cart contents, wishlist, purchases, returns, and past transactions.
 Communications with us including information provided when sending a customer support inquiry.
 Device information including browser details, IP address, and unique identifiers.

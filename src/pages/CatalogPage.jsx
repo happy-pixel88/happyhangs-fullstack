@@ -49,10 +49,10 @@ export default function CatalogPage() {
       {/* Header Section */}
       <div className="border-4 border-black bg-[#F9CD97] p-6 mb-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
         <h1 className="text-4xl font-extrabold uppercase tracking-tight text-black mb-2">
-          Catalog & Shop
+          Our Collection
         </h1>
         <p className="text-black font-medium">
-          Explore our full range of portable repellent devices, refills, and scented bundles.
+          Explore our full range of cedarwood balls, refills, and scented bundles.
         </p>
       </div>
 
