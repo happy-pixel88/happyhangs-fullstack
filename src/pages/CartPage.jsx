@@ -32,6 +32,48 @@ export default function CartPage() {
 
   const subtotal = cart.subtotal ?? 0
 
+  // 1. Meta Pixel Handler for Quantity Changes
+  const handleQuantityChange = (item, newQuantity) => {
+    if (newQuantity > item.quantity && window.fbq) {
+      window.fbq('track', 'AddToCart', {
+        content_name: item.title,
+        content_ids: [item.variant_id || item.variant?.id || item.id],
+        content_type: 'product',
+        value: item.unit_price / 100,
+        currency: 'PKR',
+      })
+    }
+    updateQuantity(item.id, newQuantity)
+  }
+
+  // 2. Meta Pixel Handler for Item Removal
+  const handleRemoveItem = (item) => {
+    if (window.fbq) {
+      window.fbq('trackCustom', 'RemoveFromCart', {
+        content_name: item.title,
+        content_ids: [item.variant_id || item.variant?.id || item.id],
+        content_type: 'product',
+        value: (item.unit_price * item.quantity) / 100,
+        currency: 'PKR',
+      })
+    }
+    removeItem(item.id)
+  }
+
+  // 3. Meta Pixel Handler for Proceeding to Checkout
+  const handleProceedToCheckout = () => {
+    if (window.fbq) {
+      window.fbq('track', 'InitiateCheckout', {
+        num_items: cart.items.reduce((sum, item) => sum + item.quantity, 0),
+        value: subtotal / 100,
+        currency: 'PKR',
+        content_ids: cart.items.map((item) => item.variant_id || item.variant?.id || item.id),
+        content_type: 'product',
+      })
+    }
+    navigate('/checkout')
+  }
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 font-sans">
       <h1 className="text-3xl font-black text-black uppercase tracking-tight mb-8">Shopping Cart</h1>
@@ -76,14 +118,14 @@ export default function CartPage() {
                   {/* Quantity Controller */}
                   <div className="flex items-center border-2 border-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                     <button
-                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                      onClick={() => handleQuantityChange(item, item.quantity - 1)}
                       className="px-2.5 py-0.5 font-bold text-base hover:bg-gray-100"
                     >
                       -
                     </button>
                     <span className="px-3 py-0.5 font-bold text-xs">{item.quantity}</span>
                     <button
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      onClick={() => handleQuantityChange(item, item.quantity + 1)}
                       className="px-2.5 py-0.5 font-bold text-base hover:bg-gray-100"
                     >
                       +
@@ -95,7 +137,7 @@ export default function CartPage() {
                       PKR {Math.round(itemTotal).toLocaleString('en-PK')}.00
                     </div>
                     <button
-                      onClick={() => removeItem(item.id)}
+                      onClick={() => handleRemoveItem(item)}
                       className="text-xs font-bold text-red-600 underline mt-1 hover:text-red-800"
                     >
                       Remove
@@ -124,7 +166,7 @@ export default function CartPage() {
             </p>
 
             <button
-              onClick={() => navigate('/checkout')}
+              onClick={handleProceedToCheckout}
               className="w-full bg-black text-white font-black py-4 px-6 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-gray-800 transition-all text-sm uppercase tracking-wider"
             >
               Proceed to Checkout

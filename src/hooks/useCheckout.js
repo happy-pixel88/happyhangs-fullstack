@@ -14,13 +14,20 @@ export function useCheckout() {
   const [submitting, setSubmitting] = useState(false)
   const [checkoutError, setCheckoutError] = useState(null)
 
-  /// src/hooks/useCheckout.js
+  // Track InitiateCheckout when the hook mounts with a valid cart
+  useEffect(() => {
+    if (cart?.id && cart?.items?.length > 0 && window.fbq) {
+      window.fbq('track', 'InitiateCheckout', {
+        num_items: cart.items.reduce((sum, item) => sum + item.quantity, 0),
+        value: (cart.total ?? 0) / 100,
+        currency: 'PKR',
+        content_ids: cart.items.map((item) => item.variant_id || item.id),
+        content_type: 'product',
+      })
+    }
+  }, [cart?.id])
 
-// 1. Force sync cart with full line-item metadata relations
-// src/hooks/useCheckout.js
-
-  // src/hooks/useCheckout.js
-
+  // Sync cart and handle checkout state initialization
   useEffect(() => {
     async function bruteForceCheckoutState() {
       if (!cart?.id) return
@@ -35,31 +42,35 @@ export function useCheckout() {
 
         // 2. DETECT THE EXACT CURSED EDGE CASE
         // 2 items total, exactly 1 quantity each (Single Diffuser + Single Refill/Resin)
-        const isCursedMixedCart = serverCart.items?.length === 2 && 
-                                  serverCart.items[0].quantity === 1 && 
-                                  serverCart.items[1].quantity === 1
+        const isCursedMixedCart =
+          serverCart.items?.length === 2 &&
+          serverCart.items[0].quantity === 1 &&
+          serverCart.items[1].quantity === 1
 
         if (isCursedMixedCart) {
           console.warn('Mixed 1x1 cart detected. Forcing Medusa double-calculation bypass...')
-          
+
           const { shipping_options } = await medusaClient.store.fulfillment.listCartOptions({
             cart_id: serverCart.id,
           })
-          
+
           if (shipping_options && shipping_options.length > 0) {
             const targetId = shipping_options[0].id
-            
+
             // STRIKE 1: Medusa might drop the discount here because of collection isolation
             await medusaClient.store.cart.addShippingMethod(serverCart.id, {
               option_id: targetId,
             })
-            
-            // STRIKE 2: The Double-Tap. Force Medusa to re-evaluate the promo engine 
+
+            // STRIKE 2: The Double-Tap. Force Medusa to re-evaluate the promo engine
             // now that the shipping method is actively bound to the cart context.
-            const { cart: finalForcedCart } = await medusaClient.store.cart.addShippingMethod(serverCart.id, {
-              option_id: targetId,
-            })
-            
+            const { cart: finalForcedCart } = await medusaClient.store.cart.addShippingMethod(
+              serverCart.id,
+              {
+                option_id: targetId,
+              }
+            )
+
             setSelectedShippingOption(targetId)
             setCart(finalForcedCart)
             return // Abort the rest of the standard logic
@@ -67,12 +78,13 @@ export function useCheckout() {
         }
 
         // --- 3. STANDARD LOGIC FOR EVERYTHING ELSE (Bundles, Packs, >3 Items, etc.) ---
-        
+
         if (serverCart.shipping_methods && serverCart.shipping_methods.length > 0) {
-          const activeMethodId = serverCart.shipping_methods[0].shipping_option_id || serverCart.shipping_methods[0].id
+          const activeMethodId =
+            serverCart.shipping_methods[0].shipping_option_id || serverCart.shipping_methods[0].id
           setSelectedShippingOption(activeMethodId)
-          setCart(serverCart) 
-          return 
+          setCart(serverCart)
+          return
         }
 
         const { shipping_options } = await medusaClient.store.fulfillment.listCartOptions({
@@ -86,14 +98,16 @@ export function useCheckout() {
           const defaultOptionId = options[0].id
           setSelectedShippingOption(defaultOptionId)
 
-          const { cart: updatedCart } = await medusaClient.store.cart.addShippingMethod(serverCart.id, {
-            option_id: defaultOptionId,
-          })
+          const { cart: updatedCart } = await medusaClient.store.cart.addShippingMethod(
+            serverCart.id,
+            {
+              option_id: defaultOptionId,
+            }
+          )
           setCart(updatedCart)
         } else {
           setCart(serverCart)
         }
-
       } catch (err) {
         console.error('Error initializing checkout state:', err)
       } finally {
@@ -103,6 +117,7 @@ export function useCheckout() {
 
     bruteForceCheckoutState()
   }, [cart?.id])
+
   const selectShippingMethod = async (optionId) => {
     if (!cart?.id || !optionId) return
     try {
@@ -125,9 +140,12 @@ export function useCheckout() {
       setCart(updatedCart)
       return { success: true }
     } catch (err) {
-      return { 
-        success: false, 
-        message: err?.response?.data?.message || err?.message || 'Invalid promo code for this item combination.' 
+      return {
+        success: false,
+        message:
+          err?.response?.data?.message ||
+          err?.message ||
+          'Invalid promo code for this item combination.',
       }
     }
   }
@@ -181,26 +199,38 @@ export function useCheckout() {
         }
       }
 
-      if (targetShippingOptionId && (!updatedCart.shipping_methods || updatedCart.shipping_methods.length === 0)) {
-        const { cart: cartWithShipping } = await medusaClient.store.cart.addShippingMethod(updatedCart.id, {
-          option_id: targetShippingOptionId,
-        })
+      if (
+        targetShippingOptionId &&
+        (!updatedCart.shipping_methods || updatedCart.shipping_methods.length === 0)
+      ) {
+        const { cart: cartWithShipping } = await medusaClient.store.cart.addShippingMethod(
+          updatedCart.id,
+          {
+            option_id: targetShippingOptionId,
+          }
+        )
         updatedCart = cartWithShipping
         setCart(updatedCart)
       }
 
       // 3. Build & Save Metadata BEFORE Payment Session
       const orderItems = updatedCart.items || []
-      const trueSubtotal = orderItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0)
+      const trueSubtotal = orderItems.reduce(
+        (sum, item) => sum + item.unit_price * item.quantity,
+        0
+      )
       const shippingVal = updatedCart.shipping_total ?? 0
       const discountVal = updatedCart.discount_total ?? 0
-      const totalVal = updatedCart.total ?? (trueSubtotal + shippingVal - discountVal)
+      const totalVal = updatedCart.total ?? trueSubtotal + shippingVal - discountVal
 
-      const itemSummary = orderItems.map((item) => {
-        const selectedScents = item.metadata?.selected_scents || item.metadata?.all_bundle_scents
-        const scentDetails = selectedScents ? ` [Scents: ${selectedScents}]` : ''
-        return `${item.title}${scentDetails} (x${item.quantity})`
-      }).join(' | ')
+      const itemSummary = orderItems
+        .map((item) => {
+          const selectedScents =
+            item.metadata?.selected_scents || item.metadata?.all_bundle_scents
+          const scentDetails = selectedScents ? ` [Scents: ${selectedScents}]` : ''
+          return `${item.title}${scentDetails} (x${item.quantity})`
+        })
+        .join(' | ')
 
       const makePayload = {
         customer_name: `${formData.firstName} ${formData.lastName}`,
@@ -252,8 +282,24 @@ export function useCheckout() {
 
       if (response?.type === 'order' && response?.order) {
         const order = response.order
+
+        // Track Meta Pixel Purchase event right on successful order completion
+        if (window.fbq) {
+          window.fbq('track', 'Purchase', {
+            value: (order.total ?? totalVal) / 100,
+            currency: 'PKR',
+            content_type: 'product',
+            contents: order.items?.map((item) => ({
+              id: item.variant_id || item.id,
+              quantity: item.quantity,
+            })),
+          })
+        }
+
         try {
-          const webhookUrl = import.meta.env.VITE_MAKE_WEBHOOK_URL || 'https://hook.eu1.make.com/6gf7i0sw663t5nt615wqj72ac7lx29jx'
+          const webhookUrl =
+            import.meta.env.VITE_MAKE_WEBHOOK_URL ||
+            'https://hook.eu1.make.com/6gf7i0sw663t5nt615wqj72ac7lx29jx'
           await fetch(webhookUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
