@@ -60,16 +60,21 @@ export default function CartPage() {
     removeItem(item.id)
   }
 
-  // 3. Meta Pixel Handler for Proceeding to Checkout
+  // 3. Meta Pixel Handler for Proceeding to Checkout (With CAPI EventID Deduplication)
   const handleProceedToCheckout = () => {
     if (window.fbq) {
-      window.fbq('track', 'InitiateCheckout', {
-        num_items: cart.items.reduce((sum, item) => sum + item.quantity, 0),
-        value: subtotal / 100,
-        currency: 'PKR',
-        content_ids: cart.items.map((item) => item.variant_id || item.variant?.id || item.id),
-        content_type: 'product',
-      })
+      window.fbq(
+        'track',
+        'InitiateCheckout',
+        {
+          num_items: cart.items.reduce((sum, item) => sum + item.quantity, 0),
+          value: subtotal / 100,
+          currency: 'PKR',
+          content_ids: cart.items.map((item) => item.variant_id || item.variant?.id || item.id),
+          content_type: 'product',
+        },
+        { eventID: cart.id } // Pass cart ID for CAPI deduplication
+      )
     }
     navigate('/checkout')
   }

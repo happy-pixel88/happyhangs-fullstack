@@ -283,17 +283,22 @@ export function useCheckout() {
       if (response?.type === 'order' && response?.order) {
         const order = response.order
 
-        // Track Meta Pixel Purchase event right on successful order completion
+        // Track Meta Pixel Purchase event with eventID deduplication for CAPI resilience
         if (window.fbq) {
-          window.fbq('track', 'Purchase', {
-            value: (order.total ?? totalVal) / 100,
-            currency: 'PKR',
-            content_type: 'product',
-            contents: order.items?.map((item) => ({
-              id: item.variant_id || item.id,
-              quantity: item.quantity,
-            })),
-          })
+          window.fbq(
+            'track',
+            'Purchase',
+            {
+              value: (order.total ?? totalVal) / 100,
+              currency: 'PKR',
+              content_type: 'product',
+              contents: order.items?.map((item) => ({
+                id: item.variant_id || item.id,
+                quantity: item.quantity,
+              })),
+            },
+            { eventID: order.id } // Pass unique order ID so browser and CAPI events match
+          )
         }
 
         try {
