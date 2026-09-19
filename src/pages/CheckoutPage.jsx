@@ -11,6 +11,7 @@ export default function CheckoutPage() {
     selectedShippingOption,
     selectShippingMethod,
     applyPromotionalCode,
+    syncCustomerInfo,
     completeOrder,
     loadingShipping,
     submitting,
@@ -64,6 +65,11 @@ export default function CheckoutPage() {
     }
   }
 
+  // Trigger background address sync whenever user finishes editing an input
+  const handleInputBlur = () => {
+    syncCustomerInfo(formData)
+  }
+
   const handleApplyPromo = async (e) => {
     e.preventDefault()
     if (!promoCode.trim()) return
@@ -111,10 +117,11 @@ export default function CheckoutPage() {
   }
 
   const cartItems = cart?.items ?? []
-const subtotal = cartItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0)
-const shippingTotal = cart?.shipping_total ?? 0
-const discountTotal = cart?.discount_total ?? 0
-const grandTotal = cart?.total ?? (subtotal + shippingTotal - discountTotal)
+  const subtotal = cartItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0)
+  const shippingTotal = cart?.shipping_total ?? 0
+  const discountTotal = cart?.discount_total ?? 0
+  const grandTotal = cart?.total ?? (subtotal + shippingTotal - discountTotal)
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 font-sans">
       <h1 className="text-3xl font-black text-black uppercase tracking-tight mb-8">Checkout</h1>
@@ -142,6 +149,7 @@ const grandTotal = cart?.total ?? (subtotal + shippingTotal - discountTotal)
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
+                  onBlur={handleInputBlur}
                   placeholder="happyhangs45@gmail.com-write this email if you dont want to enter your email"
                   className="w-full border-2 border-black p-3 font-medium focus:outline-none focus:ring-2 focus:ring-black"
                 />
@@ -165,6 +173,7 @@ const grandTotal = cart?.total ?? (subtotal + shippingTotal - discountTotal)
                       name="firstName"
                       value={formData.firstName}
                       onChange={handleInputChange}
+                      onBlur={handleInputBlur}
                       className="w-full border-2 border-black p-3 font-medium focus:outline-none"
                     />
                     {validationErrors.firstName && (
@@ -178,6 +187,7 @@ const grandTotal = cart?.total ?? (subtotal + shippingTotal - discountTotal)
                       name="lastName"
                       value={formData.lastName}
                       onChange={handleInputChange}
+                      onBlur={handleInputBlur}
                       className="w-full border-2 border-black p-3 font-medium focus:outline-none"
                     />
                     {validationErrors.lastName && (
@@ -193,6 +203,7 @@ const grandTotal = cart?.total ?? (subtotal + shippingTotal - discountTotal)
                     name="address"
                     value={formData.address}
                     onChange={handleInputChange}
+                    onBlur={handleInputBlur}
                     placeholder="House number, Street name, Sector/Block"
                     className="w-full border-2 border-black p-3 font-medium focus:outline-none"
                   />
@@ -207,7 +218,11 @@ const grandTotal = cart?.total ?? (subtotal + shippingTotal - discountTotal)
                     <select
                       name="city"
                       value={formData.city}
-                      onChange={handleInputChange}
+                      onChange={(e) => {
+                        handleInputChange(e)
+                        // Trigger background sync immediately when dropdown selection changes
+                        syncCustomerInfo({ ...formData, city: e.target.value })
+                      }}
                       className="w-full border-2 border-black p-3 font-bold bg-white focus:outline-none"
                     >
                       {pkCities.map((city) => (
@@ -223,6 +238,7 @@ const grandTotal = cart?.total ?? (subtotal + shippingTotal - discountTotal)
                       name="phone"
                       value={formData.phone}
                       onChange={handleInputChange}
+                      onBlur={handleInputBlur}
                       placeholder="03154252433"
                       className="w-full border-2 border-black p-3 font-medium focus:outline-none"
                     />
