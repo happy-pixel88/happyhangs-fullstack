@@ -16,6 +16,8 @@ export function useCheckout() {
 
   // Track field state hashes to avoid redundant API hits during re-editing
   const lastSyncedHash = useRef('')
+  // Track in-flight address sync promise to prevent concurrent database row locking
+  const activeSyncPromise = useRef(null)
 
   // 1. Track InitiateCheckout when hook mounts
   useEffect(() => {
@@ -170,33 +172,40 @@ export function useCheckout() {
     const currentHash = `${cleanEmail}|${cleanPhone}|${firstName}|${lastName}|${address}|${city}`
     if (currentHash === lastSyncedHash.current) return
 
-    try {
-      lastSyncedHash.current = currentHash
+    lastSyncedHash.current = currentHash
 
-      const { cart: updatedCart } = await medusaClient.store.cart.update(cart.id, {
-        email: cleanEmail || undefined,
-        shipping_address: {
-          first_name: firstName,
-          last_name: lastName,
-          address_1: address,
-          city: city,
-          country_code: 'pk',
-          phone: cleanPhone,
-        },
-        billing_address: {
-          first_name: firstName,
-          last_name: lastName,
-          address_1: address,
-          city: city,
-          country_code: 'pk',
-          phone: cleanPhone,
-        },
-      })
+    // Track promise in activeSyncPromise to prevent concurrent completeCart locks
+    activeSyncPromise.current = (async () => {
+      try {
+        const { cart: updatedCart } = await medusaClient.store.cart.update(cart.id, {
+          email: cleanEmail || undefined,
+          shipping_address: {
+            first_name: firstName,
+            last_name: lastName,
+            address_1: address,
+            city: city,
+            country_code: 'pk',
+            phone: cleanPhone,
+          },
+          billing_address: {
+            first_name: firstName,
+            last_name: lastName,
+            address_1: address,
+            city: city,
+            country_code: 'pk',
+            phone: cleanPhone,
+          },
+        })
 
-      setCart(updatedCart)
-    } catch (err) {
-      console.warn('Background address sync warning:', err)
-    }
+        setCart(updatedCart)
+      } catch (err) {
+        console.warn('Background address sync warning:', err)
+      } finally {
+        activeSyncPromise.current = null
+      }
+    })()
+
+    await activeSyncPromise.current
   }
 
   /**
@@ -212,6 +221,11 @@ export function useCheckout() {
     setCheckoutError(null)
 
     try {
+      // 1. If an onBlur address sync is currently travelling across the wire, wait for it to clear first
+      if (activeSyncPromise.current) {
+        await activeSyncPromise.current
+      }
+
       const cleanEmail = (formData.email || '').trim().toLowerCase()
       const cleanPhone = (formData.phone || '').trim()
       const firstName = (formData.firstName || '').trim()
@@ -250,7 +264,7 @@ export function useCheckout() {
         total_price: `PKR ${Math.round(totalVal)}`,
       }
 
-      // 1. Single final payload update ensuring latest values (catering to last-second re-edits)
+      // 2. Single final payload update ensuring latest values (catering to last-second re-edits)
       let { cart: updatedCart } = await medusaClient.store.cart.update(cart.id, {
         email: cleanEmail,
         shipping_address: {
@@ -279,7 +293,7 @@ export function useCheckout() {
         },
       })
 
-      // 2. Fast Payment Session check
+      // 3. Fast Payment Session check
       try {
         const paymentRes = await medusaClient.store.payment.initiatePaymentSession(
           updatedCart,
@@ -292,8 +306,25 @@ export function useCheckout() {
         // Payment session already active or fallback created
       }
 
-      // 3. Complete Cart Transaction
-      const response = await medusaClient.store.cart.complete(updatedCart.id)
+      // 4. Complete Cart Transaction with automatic 409 row-lock retry mechanism
+      let response
+      try {
+        response = await medusaClient.store.cart.complete(updatedCart.id)
+      } catch (completeErr) {
+        const isLockError =
+          completeErr?.status === 409 ||
+          completeErr?.response?.status === 409 ||
+          completeErr?.message?.toLowerCase().includes('lock') ||
+          completeErr?.message?.toLowerCase().includes('conflict')
+
+        if (isLockError) {
+          console.warn('Cart row lock detected. Retrying completion in 400ms...')
+          await new Promise((res) => setTimeout(res, 400))
+          response = await medusaClient.store.cart.complete(updatedCart.id)
+        } else {
+          throw completeErr
+        }
+      }
 
       if (response?.type === 'order' && response?.order) {
         const order = response.order
@@ -316,7 +347,7 @@ export function useCheckout() {
           )
         }
 
-        // 4. NON-BLOCKING Webhook — fire asynchronously without awaiting
+        // 5. NON-BLOCKING Webhook — fire asynchronously without awaiting
         const webhookUrl =
           import.meta.env.VITE_MAKE_WEBHOOK_URL ||
           'https://hook.eu1.make.com/6gf7i0sw663t5nt615wqj72ac7lx29jx'
@@ -327,7 +358,7 @@ export function useCheckout() {
           body: JSON.stringify({ order_id: order.display_id || order.id, ...makePayload }),
         }).catch((webhookErr) => console.error('Make.com Webhook Failed silently:', webhookErr))
 
-        // 5. Navigate immediately
+        // 6. Navigate immediately
         localStorage.removeItem('medusa_cart_id')
         await createFreshCart()
         navigate(`/order/confirmed/${order.id}`, { state: { order, makePayload } })
