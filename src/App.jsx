@@ -22,9 +22,11 @@ import LegalNotice from './pages/LegalNotice'
 export default function App() {
   const location = useLocation()
 
-  // Dynamic Meta Pixel PageView tracking on route change
+  // Dynamic Meta Pixel PageView tracking + AutoConfig Override
   useEffect(() => {
     if (window.fbq) {
+      // FORCE META PIXEL TO STOP DYNAMICALLY DIVIDING PKR VALUES BY 100
+      window.fbq('set', 'autoConfig', false, '1746668106250727')
       window.fbq('track', 'PageView')
     }
   }, [location])
