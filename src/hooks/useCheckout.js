@@ -1,4 +1,3 @@
-// src/hooks/useCheckout.js
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
@@ -19,18 +18,23 @@ export function useCheckout() {
   // Track in-flight address sync promise to prevent concurrent database row locking
   const activeSyncPromise = useRef(null)
 
-  // 1. Track InitiateCheckout when hook mounts
+  // 1. Track InitiateCheckout when hook mounts (Fixed PKR value scaling & content format)
   useEffect(() => {
     if (cart?.id && cart?.items?.length > 0 && window.fbq) {
+      const rawTotal = cart.total ?? cart.subtotal ?? 0
+
       window.fbq(
         'track',
         'InitiateCheckout',
         {
           num_items: cart.items.reduce((sum, item) => sum + item.quantity, 0),
-          value: (cart.total ?? 0) / 100,
+          value: Number(rawTotal), // Direct integer value (e.g. 1349)
           currency: 'PKR',
-          content_ids: cart.items.map((item) => item.variant_id || item.id),
           content_type: 'product',
+          contents: cart.items.map((item) => ({
+            id: item.variant_id || item.id,
+            quantity: item.quantity,
+          })),
         },
         { eventID: cart.id }
       )
@@ -153,7 +157,6 @@ export function useCheckout() {
 
   /**
    * BACKGROUND SYNC HANDLER (Call on input onBlur or step changes)
-   * Handles both initial entries and subsequent re-edits seamlessly.
    */
   const syncCustomerInfo = async (formData) => {
     if (!cart?.id) return
@@ -165,16 +168,13 @@ export function useCheckout() {
     const address = (formData.address || '').trim()
     const city = (formData.city || '').trim()
 
-    // Minimum check: only sync if at least email or first name + address are provided
     if (!cleanEmail && !firstName) return
 
-    // Create a fingerprint hash to prevent duplicate server round-trips if nothing changed
     const currentHash = `${cleanEmail}|${cleanPhone}|${firstName}|${lastName}|${address}|${city}`
     if (currentHash === lastSyncedHash.current) return
 
     lastSyncedHash.current = currentHash
 
-    // Track promise in activeSyncPromise to prevent concurrent completeCart locks
     activeSyncPromise.current = (async () => {
       try {
         const { cart: updatedCart } = await medusaClient.store.cart.update(cart.id, {
@@ -209,7 +209,7 @@ export function useCheckout() {
   }
 
   /**
-   * FAST ORDER COMPLETION (< 2 Seconds Execution)
+   * FAST ORDER COMPLETION
    */
   const completeOrder = async (formData) => {
     if (!cart?.id) {
@@ -221,7 +221,6 @@ export function useCheckout() {
     setCheckoutError(null)
 
     try {
-      // 1. If an onBlur address sync is currently travelling across the wire, wait for it to clear first
       if (activeSyncPromise.current) {
         await activeSyncPromise.current
       }
@@ -233,7 +232,6 @@ export function useCheckout() {
       const address = (formData.address || '').trim()
       const city = (formData.city || '').trim()
 
-      // Build summary metadata
       const orderItems = cart.items || []
       const trueSubtotal = orderItems.reduce(
         (sum, item) => sum + item.unit_price * item.quantity,
@@ -264,7 +262,6 @@ export function useCheckout() {
         total_price: `PKR ${Math.round(totalVal)}`,
       }
 
-      // 2. Single final payload update ensuring latest values (catering to last-second re-edits)
       let { cart: updatedCart } = await medusaClient.store.cart.update(cart.id, {
         email: cleanEmail,
         shipping_address: {
@@ -293,7 +290,6 @@ export function useCheckout() {
         },
       })
 
-      // 3. Fast Payment Session check
       try {
         const paymentRes = await medusaClient.store.payment.initiatePaymentSession(
           updatedCart,
@@ -303,10 +299,9 @@ export function useCheckout() {
           updatedCart = paymentRes.cart
         }
       } catch (payErr) {
-        // Payment session already active or fallback created
+        // Payment session active fallback
       }
 
-      // 4. Complete Cart Transaction with automatic 409 row-lock retry mechanism
       let response
       try {
         response = await medusaClient.store.cart.complete(updatedCart.id)
@@ -329,13 +324,15 @@ export function useCheckout() {
       if (response?.type === 'order' && response?.order) {
         const order = response.order
 
-        // Track Meta Pixel Purchase event with eventID deduplication
+        // Track Meta Pixel Purchase event accurately (FIXED: Direct integer total)
         if (window.fbq) {
+          const finalOrderValue = Number(order.total ?? totalVal ?? 0)
+
           window.fbq(
             'track',
             'Purchase',
             {
-              value: (order.total ?? totalVal) / 100,
+              value: finalOrderValue, // Direct total value (e.g. 1349 instead of 13.49)
               currency: 'PKR',
               content_type: 'product',
               contents: order.items?.map((item) => ({
@@ -347,7 +344,6 @@ export function useCheckout() {
           )
         }
 
-        // 5. NON-BLOCKING Webhook — fire asynchronously without awaiting
         const webhookUrl =
           import.meta.env.VITE_MAKE_WEBHOOK_URL ||
           'https://hook.eu1.make.com/6gf7i0sw663t5nt615wqj72ac7lx29jx'
@@ -358,7 +354,6 @@ export function useCheckout() {
           body: JSON.stringify({ order_id: order.display_id || order.id, ...makePayload }),
         }).catch((webhookErr) => console.error('Make.com Webhook Failed silently:', webhookErr))
 
-        // 6. Navigate immediately
         localStorage.removeItem('medusa_cart_id')
         await createFreshCart()
         navigate(`/order/confirmed/${order.id}`, { state: { order, makePayload } })
