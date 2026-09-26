@@ -18,17 +18,25 @@ export function useCheckout() {
   // Track in-flight address sync promise to prevent concurrent database row locking
   const activeSyncPromise = useRef(null)
 
-  // 1. Track InitiateCheckout when hook mounts (Fixed PKR value scaling & content format)
+  // 1. Track InitiateCheckout when hook mounts with auto-scaling guard
   useEffect(() => {
     if (cart?.id && cart?.items?.length > 0 && window.fbq) {
       const rawTotal = cart.total ?? cart.subtotal ?? 0
+      let numericValue = typeof rawTotal === 'number' ? rawTotal : parseFloat(rawTotal) || 0
+
+      // Auto-scale up if Medusa returns standard decimal floats (e.g. 15.99 -> 1599)
+      if (numericValue > 0 && numericValue < 100) {
+        numericValue = numericValue * 100
+      }
+
+      const finalPkrValue = Math.round(numericValue)
 
       window.fbq(
         'track',
         'InitiateCheckout',
         {
           num_items: cart.items.reduce((sum, item) => sum + item.quantity, 0),
-          value: Number(rawTotal), // Direct integer value (e.g. 1349)
+          value: finalPkrValue,
           currency: 'PKR',
           content_type: 'product',
           contents: cart.items.map((item) => ({
@@ -324,15 +332,23 @@ export function useCheckout() {
       if (response?.type === 'order' && response?.order) {
         const order = response.order
 
-        // Track Meta Pixel Purchase event accurately (FIXED: Direct integer total)
+        // Track Meta Pixel Purchase event accurately
         if (window.fbq) {
-          const finalOrderValue = Number(order.total ?? totalVal ?? 0)
+          const rawOrderTotal = order.total ?? totalVal ?? 0
+          let numericValue = typeof rawOrderTotal === 'number' ? rawOrderTotal : parseFloat(rawOrderTotal) || 0
+
+          // GUARANTEED FIX: If value is 15.99, multiply by 100 to send 1599 to Meta Pixel
+          if (numericValue > 0 && numericValue < 100) {
+            numericValue = numericValue * 100
+          }
+
+          const finalOrderValue = Math.round(numericValue)
 
           window.fbq(
             'track',
             'Purchase',
             {
-              value: finalOrderValue, // Direct total value (e.g. 1349 instead of 13.49)
+              value: finalOrderValue, // Converts 15.99 directly to 1599 PKR
               currency: 'PKR',
               content_type: 'product',
               contents: order.items?.map((item) => ({
