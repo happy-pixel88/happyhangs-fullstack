@@ -33,32 +33,37 @@ export default function CartPage() {
   const subtotal = cart.subtotal ?? 0
 
   // 1. Meta Pixel Handler for Quantity Changes
-  const handleQuantityChange = (item, newQuantity) => {
-    if (newQuantity > item.quantity && window.fbq) {
-      window.fbq('track', 'AddToCart', {
-        content_name: item.title,
-        content_ids: [item.variant_id || item.variant?.id || item.id],
-        content_type: 'product',
-        value: item.unit_price / 100,
-        currency: 'PKR',
-      })
-    }
-    updateQuantity(item.id, newQuantity)
+const handleQuantityChange = (item, newQuantity) => {
+  // Fire AddToCart whenever quantity increases
+  if (newQuantity > item.quantity && window.fbq) {
+    const addedQuantity = newQuantity - item.quantity
+    
+    window.fbq('track', 'AddToCart', {
+      content_name: item.title,
+      content_ids: [item.variant_id || item.variant?.id || item.id],
+      content_type: 'product',
+      value: Math.round(item.unit_price * addedQuantity), // Raw PKR integer (e.g., 1599)
+      currency: 'PKR',
+    })
   }
 
-  // 2. Meta Pixel Handler for Item Removal
-  const handleRemoveItem = (item) => {
-    if (window.fbq) {
-      window.fbq('trackCustom', 'RemoveFromCart', {
-        content_name: item.title,
-        content_ids: [item.variant_id || item.variant?.id || item.id],
-        content_type: 'product',
-        value: (item.unit_price * item.quantity) / 100,
-        currency: 'PKR',
-      })
-    }
-    removeItem(item.id)
+  updateQuantity(item.id, newQuantity)
+}
+
+// 2. Meta Pixel Handler for Item Removal
+const handleRemoveItem = (item) => {
+  if (window.fbq) {
+    window.fbq('trackCustom', 'RemoveFromCart', {
+      content_name: item.title,
+      content_ids: [item.variant_id || item.variant?.id || item.id],
+      content_type: 'product',
+      value: Math.round(item.unit_price * item.quantity), // Raw PKR integer
+      currency: 'PKR',
+    })
   }
+
+  removeItem(item.id)
+}
 
   // 3. Meta Pixel Handler for Proceeding to Checkout (With CAPI EventID Deduplication)
   const handleProceedToCheckout = () => {

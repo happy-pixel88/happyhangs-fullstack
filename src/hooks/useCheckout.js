@@ -361,8 +361,7 @@ export function useCheckout() {
         }
 
         const webhookUrl =
-          import.meta.env.VITE_MAKE_WEBHOOK_URL ||
-          'https://hook.eu1.make.com/6gf7i0sw663t5nt615wqj72ac7lx29jx'
+          import.meta.env.VITE_MAKE_WEBHOOK_URL 
 
         fetch(webhookUrl, {
           method: 'POST',
