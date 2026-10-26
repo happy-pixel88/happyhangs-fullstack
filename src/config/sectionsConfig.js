@@ -6,7 +6,7 @@ export const homepageSections = [
     subheading: 'Discover our complete range of premium fragrances, diffusers, and refills.',
     collectionId: 'all',
     viewAllLink: '/catalog', // Added leading slash
-    image: 'https://pub-f1b005fa8b8d40d390923f38752ae035.r2.dev/collectioncollection.jpeg',
+    image: 'https://pub-f1b005fa8b8d40d390923f38752ae035.r2.dev/collection.jpeg',
   }, 
   {
     id: 'scent-oil-diffusers',
@@ -14,7 +14,7 @@ export const homepageSections = [
     subheading: 'Continuous, long-lasting aromas for your vehicle or home space.',
     collectionId: 'pcol_01KZX9K89HP4P59C4Y05WVR51N',
     viewAllLink: '/catalog?collection=pcol_01KZX9K89HP4P59C4Y05WVR51N',
-    image: 'https://pub-f1b005fa8b8d40d390923f38752ae035.r2.dev/scentcollection.jpeg',
+    image: 'https://pub-f1b005fa8b8d40d390923f38752ae035.r2.dev/scent.jpeg',
   },
   {
     id: 'air-fresheners',
@@ -30,7 +30,7 @@ export const homepageSections = [
     subheading: 'Save big when you purchase your favorite scent pairings together.',
     collectionId: 'pcol_01M0YMBXGFKKG2ZAC5Q7X4SVFP',
     viewAllLink: '/catalog?collection=pcol_01M0YMBXGFKKG2ZAC5Q7X4SVFP',
-    image: 'https://pub-f1b005fa8b8d40d390923f38752ae035.r2.dev/bundlescollection.jpeg',
+    image: 'https://pub-f1b005fa8b8d40d390923f38752ae035.r2.dev/bundle.jpeg',
   },
   {
     id: 'Balls',
@@ -46,6 +46,6 @@ export const homepageSections = [
     subheading: 'Keep your favorite diffusers full with our eco-friendly refill bottles.',
     collectionId: 'pcol_01M0HZF2DJFP50FNYMZ2DEBW85',
     viewAllLink: '/catalog?collection=pcol_01M0HZF2DJFP50FNYMZ2DEBW85',
-    image: 'https://pub-f1b005fa8b8d40d390923f38752ae035.r2.dev/refillscollection.jpeg',
+    image: 'https://pub-f1b005fa8b8d40d390923f38752ae035.r2.dev/circle.jpeg',
   },
 ]
