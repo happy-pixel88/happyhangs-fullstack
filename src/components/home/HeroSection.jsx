@@ -54,7 +54,7 @@ export default function HeroSection() {
               Redefining Your Atmosphere
             </h1>
             <p className="mt-4 text-base md:text-lg text-gray-100 font-light leading-relaxed">
-              Discover an accessible lifestyle brand that transforms vehicle interiors and indoor space through sensory design and high quality, long-lasting fragrances.
+             
             </p>
 
             {/* Updated CTA to route to /catalog */}
