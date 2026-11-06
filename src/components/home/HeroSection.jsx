@@ -5,7 +5,7 @@ export default function HeroSection() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   const images = [
-    'https://pub-f1b005fa8b8d40d390923f38752ae035.r2.dev/web9.jpeg',
+    'https://pub-f1b005fa8b8d40d390923f38752ae035.r2.dev/websiteimage.jpeg',
     'https://pub-f1b005fa8b8d40d390923f38752ae035.r2.dev/home12.jpeg',
   ]
 
