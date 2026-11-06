@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react'
 
 const ANNOUNCEMENTS = [
   "DELIVERING ACROSS PAKISTAN",
-  "WELCOME TO HAPPYHANGS!",
-  "FREE SHIPPING ON BUNDLE ORDERS",
-  "PREMIUM FRAGRANCES THAT LAST"
+  "11.11 sale is LIVE now!",
+  "FREE SHIPPING ON BUNDLE ORDERS"
+ 
 ]
 
 export default function PromoBanner() {
