@@ -138,27 +138,7 @@ export default function CheckoutPage() {
           
           {/* Customer & Delivery Form Inputs */}
           <div className="lg:col-span-7 space-y-6 order-1">
-            <div className="border-2 border-black p-5 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              <h2 className="text-lg font-bold uppercase mb-4 border-b-2 border-black pb-2">
-                1. Contact Information
-              </h2>
-              <div>
-                <label className="block text-xs font-bold uppercase mb-1">Email Address</label>
-                <input
-                  type="text"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  onBlur={handleInputBlur}
-                  placeholder="happyhangs45@gmail.com-write this email if you dont want to enter your email"
-                  className="w-full border-2 border-black p-3 font-medium focus:outline-none focus:ring-2 focus:ring-black"
-                />
-                
-                {validationErrors.email && (
-                  <p className="text-red-600 text-xs font-bold mt-1">{validationErrors.email}</p>
-                )}
-              </div>
-            </div>
+            
 
             <div className="border-2 border-black p-5 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               <h2 className="text-lg font-bold uppercase mb-4 border-b-2 border-black pb-2">
@@ -212,19 +192,21 @@ export default function CheckoutPage() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+               
                   <div>
-                    <label className="block text-xs font-bold uppercase mb-1">City</label>
-                    <input
+                    <label className="block text-xs font-bold uppercase mb-1">Street Address</label>
+                  <input
                     type="text"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleInputChange}
+                    name="address"
+                    value={formData.address}
+                    onChange={handleInputChange}
                     onBlur={handleInputBlur}
                     placeholder="House number, Street name, Sector/Block"
                     className="w-full border-2 border-black p-3 font-medium focus:outline-none"
-                    />
-                     
+                  />
+                  {validationErrors.address && (
+                    <p className="text-red-600 text-xs font-bold mt-1">{validationErrors.address}</p>
+                  )}
                   </div>
 
                   <div>
@@ -242,7 +224,7 @@ export default function CheckoutPage() {
                       <p className="text-red-600 text-xs font-bold mt-1">{validationErrors.phone}</p>
                     )}
                   </div>
-                </div>
+                
               </div>
             </div>
 
