@@ -215,20 +215,16 @@ export default function CheckoutPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold uppercase mb-1">City</label>
-                    <select
+                    <input
+                    type="text"
                       name="city"
                       value={formData.city}
-                      onChange={(e) => {
-                        handleInputChange(e)
-                        // Trigger background sync immediately when dropdown selection changes
-                        syncCustomerInfo({ ...formData, city: e.target.value })
-                      }}
-                      className="w-full border-2 border-black p-3 font-bold bg-white focus:outline-none"
-                    >
-                      {pkCities.map((city) => (
-                        <option key={city} value={city}>{city}</option>
-                      ))}
-                    </select>
+                      onChange={handleInputChange}
+                    onBlur={handleInputBlur}
+                    placeholder="House number, Street name, Sector/Block"
+                    className="w-full border-2 border-black p-3 font-medium focus:outline-none"
+                    />
+                     
                   </div>
 
                   <div>
