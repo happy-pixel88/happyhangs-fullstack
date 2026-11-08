@@ -19,7 +19,6 @@ export default function CheckoutPage() {
   } = useCheckout()
 
   const [formData, setFormData] = useState({
-    email: '',
     firstName: '',
     lastName: '',
     address: '',
@@ -30,22 +29,6 @@ export default function CheckoutPage() {
   const [promoCode, setPromoCode] = useState('')
   const [promoMessage, setPromoMessage] = useState(null)
   const [validationErrors, setValidationErrors] = useState({})
-
-  const pkCities = [
-    'Abbottabad', 'Alpuri', 'Attock', 'Badin', 'Bagh', 'Bahawalnagar', 'Bahawalpur', 'Bannu', 'Batkhela', 'Bhakkar',
-    'Bhimber', 'Burewala', 'Chakwal', 'Chaman', 'Charsadda', 'Chilas', 'Chiniot', 'Chishtian', 'Chitral', 'Dadu',
-    'Daggar', 'Daska', 'Dera Allah Yar', 'Dera Ghazi Khan', 'Dera Ismail Khan', 'Dera Murad Jamali', 'Faisalabad', 'Gharo', 'Ghotki', 'Gilgit',
-    'Gojra', 'Gujranwala', 'Gujrat', 'Gwadar', 'Hafizabad', 'Hangu', 'Haripur', 'Haroonabad', 'Hub', 'Hunza (Karimabad)',
-    'Hyderabad', 'Islamabad', 'Jacobabad', 'Jaranwala', 'Jhelum', 'Jhang', 'Kalat', 'Kamoke', 'Kandhkot', 'Karachi',
-    'Karak', 'Kashmore', 'Kasur', 'Khairpur', 'Khanewal', 'Khanpur', 'Kharan', 'Khipro', 'Khuzdar', 'Kohat',
-    'Kot Addu', 'Kotli', 'Kotri', 'Lahore', 'Lalamusa', 'Larkana', 'Layyah', 'Loralai', 'Mandi Bahauddin', 'Mansehra',
-    'Mardan', 'Mastung', 'Matiari', 'Mianwali', 'Mingora (Swat)', 'Mirpur', 'Mirpur Khas', 'Multan', 'Muridke', 'Muzaffarabad',
-    'Muzaffargarh', 'Nawabshah (Shaheed Benazirabad)', 'Nowshera', 'Nowshera Virkan', 'Nushki', 'Okara', 'Pakpattan', 'Parachinar', 'Pasrur', 'Pattoki',
-    'Peshawar', 'Pishin', 'Quetta', 'Rahim Yar Khan', 'Rawalakot', 'Rawalpindi', 'Sahiwal', 'Samundri', 'Sanghar', 'Sargodha',
-    'Shahdadkot', 'Sheikhupura', 'Shikarpur', 'Sialkot', 'Sibi', 'Skardu', 'Sukkur', 'Swabi', 'Tando Adam', 'Tando Allahyar',
-    'Tank', 'Taxila', 'Thatta', 'Timergara', 'Toba Tek Singh', 'Turbat', 'Umerkot', 'Vihari', 'Wah Cantt', 'Wazirabad',
-    'Zhob'
-  ]
 
   useEffect(() => {
     if (shippingOptions?.length > 0 && !selectedShippingOption) {
@@ -85,12 +68,10 @@ export default function CheckoutPage() {
     e.preventDefault()
 
     const errors = {}
-    if (!formData.email.trim() || !formData.email.includes('@')) {
-      errors.email = 'Please provide a valid email address.'
-    }
     if (!formData.firstName.trim()) errors.firstName = 'First name is required.'
     if (!formData.lastName.trim()) errors.lastName = 'Last name is required.'
     if (!formData.address.trim()) errors.address = 'Street address is required.'
+    if (!formData.city.trim()) errors.city = 'City is required.'
     if (!validatePhone(formData.phone)) {
       errors.phone = 'Enter a valid 11-digit Pakistani mobile number starting with 03.'
     }
@@ -139,7 +120,6 @@ export default function CheckoutPage() {
           {/* Customer & Delivery Form Inputs */}
           <div className="lg:col-span-7 space-y-6 order-1">
             
-
             <div className="border-2 border-black p-5 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               <h2 className="text-lg font-bold uppercase mb-4 border-b-2 border-black pb-2">
                 2. Delivery Address (Pakistan)
@@ -192,9 +172,8 @@ export default function CheckoutPage() {
                   )}
                 </div>
 
-               
-                  <div>
-                    <label className="block text-xs font-bold uppercase mb-1">City</label>
+                <div>
+                  <label className="block text-xs font-bold uppercase mb-1">City</label>
                   <input
                     type="text"
                     name="city"
@@ -204,27 +183,26 @@ export default function CheckoutPage() {
                     placeholder="Islamabad"
                     className="w-full border-2 border-black p-3 font-medium focus:outline-none"
                   />
-                  {validationErrors.address && (
-                    <p className="text-red-600 text-xs font-bold mt-1">{validationErrors.address}</p>
+                  {validationErrors.city && (
+                    <p className="text-red-600 text-xs font-bold mt-1">{validationErrors.city}</p>
                   )}
-                  </div>
+                </div>
 
-                  <div>
-                    <label className="block text-xs font-bold uppercase mb-1">Mobile Phone</label>
-                    <input
-                      type="text"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      onBlur={handleInputBlur}
-                      placeholder="03154252433"
-                      className="w-full border-2 border-black p-3 font-medium focus:outline-none"
-                    />
-                    {validationErrors.phone && (
-                      <p className="text-red-600 text-xs font-bold mt-1">{validationErrors.phone}</p>
-                    )}
-                  </div>
-                
+                <div>
+                  <label className="block text-xs font-bold uppercase mb-1">Mobile Phone</label>
+                  <input
+                    type="text"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    onBlur={handleInputBlur}
+                    placeholder="03154252433"
+                    className="w-full border-2 border-black p-3 font-medium focus:outline-none"
+                  />
+                  {validationErrors.phone && (
+                    <p className="text-red-600 text-xs font-bold mt-1">{validationErrors.phone}</p>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -352,7 +330,7 @@ export default function CheckoutPage() {
                 {discountTotal > 0 && (
                   <div className="flex justify-between text-green-700">
                     <span>Discount</span>
-                    <span>- PKR {Math.round(discountTotal).toLocaleString('en-PK')}.00</span>
+                    <span>PKR {Math.round(discountTotal).toLocaleString('en-PK')}.00</span>
                   </div>
                 )}
 
@@ -362,7 +340,7 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Complete Order Button now stays directly under Order Summary on all screens */}
+              {/* Complete Order Button */}
               <button
                 type="submit"
                 disabled={submitting}
