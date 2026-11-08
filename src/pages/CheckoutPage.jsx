@@ -197,7 +197,7 @@ export default function CheckoutPage() {
                     <label className="block text-xs font-bold uppercase mb-1">City</label>
                   <input
                     type="text"
-                    name="City"
+                    name="city"
                     value={formData.city}
                     onChange={handleInputChange}
                     onBlur={handleInputBlur}
