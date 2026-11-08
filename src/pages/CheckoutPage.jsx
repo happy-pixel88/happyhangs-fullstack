@@ -180,11 +180,11 @@ export default function CheckoutPage() {
                   <label className="block text-xs font-bold uppercase mb-1">Street Address</label>
                   <input
                     type="text"
-                    name="address"
+                    name="City"
                     value={formData.address}
                     onChange={handleInputChange}
                     onBlur={handleInputBlur}
-                    placeholder="House number, Street name, Sector/Block"
+                    placeholder="Islamabad"
                     className="w-full border-2 border-black p-3 font-medium focus:outline-none"
                   />
                   {validationErrors.address && (
