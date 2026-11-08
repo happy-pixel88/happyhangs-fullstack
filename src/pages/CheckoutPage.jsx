@@ -198,7 +198,7 @@ export default function CheckoutPage() {
                   <input
                     type="text"
                     name="City"
-                    value={formData.address}
+                    value={formData.city}
                     onChange={handleInputChange}
                     onBlur={handleInputBlur}
                     placeholder="Islamabad"
