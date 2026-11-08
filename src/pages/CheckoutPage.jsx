@@ -18,11 +18,13 @@ export default function CheckoutPage() {
     checkoutError,
   } = useCheckout()
 
+  // Default fallback email keeps the backend happy without showing an input in the UI
   const [formData, setFormData] = useState({
+    email: 'happyhangs45@gmail.com',
     firstName: '',
     lastName: '',
     address: '',
-    city: 'Lahore',
+    city: '',
     phone: '',
   })
 
@@ -48,7 +50,6 @@ export default function CheckoutPage() {
     }
   }
 
-  // Trigger background address sync whenever user finishes editing an input
   const handleInputBlur = () => {
     syncCustomerInfo(formData)
   }
@@ -113,11 +114,9 @@ export default function CheckoutPage() {
         </div>
       )}
 
-      {/* Main Form wrapped around all content to maintain native submit handling */}
       <form onSubmit={handleSubmitOrder}>
         <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8">
           
-          {/* Customer & Delivery Form Inputs */}
           <div className="lg:col-span-7 space-y-6 order-1">
             
             <div className="border-2 border-black p-5 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
@@ -259,7 +258,6 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* Sidebar Area: Order Summary + Submit Button */}
           <div className="lg:col-span-5 order-2">
             <div className="border-2 border-black p-5 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] lg:sticky lg:top-6 space-y-6">
               <h2 className="text-lg font-bold uppercase border-b-2 border-black pb-2">Order Summary</h2>
@@ -293,7 +291,6 @@ export default function CheckoutPage() {
                 })}
               </div>
 
-              {/* Promo Code Subsection */}
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -340,7 +337,6 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Complete Order Button */}
               <button
                 type="submit"
                 disabled={submitting}
