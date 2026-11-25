@@ -6,7 +6,6 @@ export default function HeroSection() {
 
   const images = [
     'https://pub-f1b005fa8b8d40d390923f38752ae035.r2.dev/web9.jpeg',
-    'https://pub-f1b005fa8b8d40d390923f38752ae035.r2.dev/websiteimage.jpeg',
   ]
 
   const marqueeItems = [
@@ -83,7 +82,7 @@ export default function HeroSection() {
       </div>
 
       {/* 2. Infinite Marquee Carousel Banner */}
-      <div className="bg-[#e8cb97] text-black py-3 border-y border-[#d9ba84] overflow-hidden whitespace-nowrap flex select-none">
+      <div className="bg-[#492100] text-black py-3 border-y border-[#d9ba84] overflow-hidden whitespace-nowrap flex select-none">
         <div className="flex animate-marquee min-w-full shrink-0 items-center justify-around gap-8">
           {marqueeItems.concat(marqueeItems).map((text, idx) => (
             <React.Fragment key={idx}>

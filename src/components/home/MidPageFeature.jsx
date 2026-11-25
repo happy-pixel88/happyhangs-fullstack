@@ -36,6 +36,19 @@ const X = ({ className = "w-5 h-5" }) => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
   </svg>
 )
+
+const PlayIcon = ({ className = "w-4 h-4" }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 20 20">
+    <path d="M6.3 2.841A1.5 1.5 0 0 0 4 4.11v11.78a1.5 1.5 0 0 0 2.3 1.269l9.344-5.89a1.5 1.5 0 0 0 0-2.538L6.3 2.84Z" />
+  </svg>
+)
+
+const PauseIcon = ({ className = "w-4 h-4" }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 20 20">
+    <path d="M5.75 3a.75.75 0 0 0-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 0 0 .75-.75V3.75A.75.75 0 0 0 7.25 3h-1.5ZM12.75 3a.75.75 0 0 0-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 0 0 .75-.75V3.75a.75.75 0 0 0-.75-.75h-1.5Z" />
+  </svg>
+)
+
 const philosophyItems = [
   { title: 'Quality', description: 'Crafted with premium materials for a refined glow.' },
   { title: 'Elegance', description: 'Airy and sophisticated designs that elevate your space.' },
@@ -49,7 +62,7 @@ const DEMO_REVIEWS = [
   { id: 4, name: 'Laiba Zain', rating: 5, date: 'Aug 19, 2026', verified: true, title: 'Great Refill Value', comment: 'Ordered the bundle refill set. Really cost-effective and packaging was top notch. Fast delivery to Lahore!' },
   { id: 5, name: 'Usman Chaudhry', rating: 4, date: 'Aug 18, 2026', verified: true, title: 'Very Good Product', comment: 'Smell is super fresh. Took 3 days to arrive in Islamabad, but the product quality makes up for it.' },
   { id: 6, name: 'Zainab Ahsan', rating: 5, date: 'Aug 16, 2026', verified: true, title: 'Aesthetic & Fragrant', comment: 'Bought this for my husband’s Civic. He absolutely loved the Bluebell scent! Will reorder soon.' },
-   { id: 6, name: 'Ali Bashir', rating: 5, date: 'Aug 26, 2026', verified: true, title: 'Cool Product', comment: 'My wife loved it.' },
+  { id: 7, name: 'Ali Bashir', rating: 5, date: 'Aug 26, 2026', verified: true, title: 'Cool Product', comment: 'My wife loved it.' },
 ]
 const faqItems = [
   {
@@ -93,6 +106,8 @@ function getSection(id) {
 
 export default function MidPageFeature({ r2ImageUrl }) {
   const scrollRef = useRef(null)
+  const videoRef = useRef(null)
+  const [isPlaying, setIsPlaying] = useState(true)
   const [isMouseDown, setIsMouseDown] = useState(false)
   const [startX, setStartX] = useState(0)
   const [scrollLeft, setScrollLeft] = useState(0)
@@ -140,6 +155,17 @@ export default function MidPageFeature({ r2ImageUrl }) {
     const x = e.pageX - scrollRef.current.offsetLeft
     const walk = (x - startX) * 1.5
     scrollRef.current.scrollLeft = scrollLeft - walk
+  }
+
+  // Video play/pause toggle
+  const togglePlayPause = () => {
+    const video = videoRef.current
+    if (!video) return
+    if (video.paused) {
+      video.play().catch(() => {})
+    } else {
+      video.pause()
+    }
   }
 
   // Set initial scroll offset
@@ -205,11 +231,11 @@ export default function MidPageFeature({ r2ImageUrl }) {
                 className="group/item flex flex-col items-center shrink-0"
               >
                 {/* Large Circular Avatar */}
-                <div className="w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 rounded-full border-2 border-black p-1.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white transition-transform duration-200 group-hover/item:scale-105 group-hover/item:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+                <div className="w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 square border-2 border-black p-1.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white transition-transform duration-200 group-hover/item:scale-105 group-hover/item:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
                   <img
                     src={item.image || 'https://pub-f1b005fa8b8d40d390923f38752ae035.r2.dev/web7.jpeg'}
                     alt={item.heading}
-                    className="w-full h-full object-cover rounded-full pointer-events-none"
+                    className="w-full h-full object-cover square pointer-events-none"
                   />
                 </div>
                 {/* Title */}
@@ -234,10 +260,9 @@ export default function MidPageFeature({ r2ImageUrl }) {
           />
         )
       })()}
-     
 
       {/* 3. "The Ritual" Section */}
-      <section className="w-full bg-[#F9CD97] py-12 md:py-16 px-6 md:px-12">
+      <section className="w-full bg-[#f8e3c9] py-12 md:py-16 px-6 md:px-12">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-center">
           <div className="md:col-span-5 relative w-full aspect-4/3 sm:aspect-square md:aspect-auto md:h-[520px] rounded-none overflow-hidden border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
             <img
@@ -311,7 +336,7 @@ export default function MidPageFeature({ r2ImageUrl }) {
       })()}
 
       {/* MARQUEE CAROUSEL BANNER */}
-      <div className="w-full bg-[#E8C18C] py-3.5 border-y border-black/10 overflow-hidden select-none">
+      <div className="w-full bg-[#f58c37] py-3.5 border-y border-black/10 overflow-hidden select-none">
         <div className="animate-marquee whitespace-nowrap flex items-center gap-8">
           {[...marqueeItems1, ...marqueeItems1].map((text, i) => (
             <div key={i} className="flex items-center gap-8 shrink-0">
@@ -325,7 +350,7 @@ export default function MidPageFeature({ r2ImageUrl }) {
       </div>
 
       {/* 6. Modern Aesthetic & Practical Purpose Section */}
-      <section className="w-full bg-[#F3DEB3] py-12 md:py-16 px-6 md:px-12">
+      <section className="w-full bg-[#f7f2e9] py-12 md:py-16 px-6 md:px-12">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-stretch">
           <div className="md:col-span-5 relative w-full aspect-4/3 sm:aspect-square md:aspect-auto md:h-full min-h-[300px] md:min-h-[520px] rounded-none overflow-hidden border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
             <img
@@ -389,7 +414,7 @@ export default function MidPageFeature({ r2ImageUrl }) {
       })()}
 
       {/* 9. An Aura of Calm Section */}
-      <section className="w-full bg-[#F3DEB3] py-16 md:py-20 px-6 md:px-12 border-t border-[#E8E0D0]">
+      <section className="w-full bg-[#f7f0e4] py-16 md:py-20 px-6 md:px-12 border-t border-[#E8E0D0]">
         <div className="max-w-7xl mx-auto text-center">
           <span className="text-xs tracking-[0.25em] text-gray-400 uppercase font-medium">OUR PHILOSOPHY</span>
           <h2 className="text-3xl md:text-5xl font-serif text-gray-900 mt-2 mb-4">An Aura of Calm</h2>
@@ -413,22 +438,50 @@ export default function MidPageFeature({ r2ImageUrl }) {
           </div>
         </div>
       </section>
-       {/* 10.1. video */}
-      <section className="w-full bg-[#F3DEB3] py-12 md:py-16 px-6 md:px-12">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-stretch">
-    <div className="md:col-span-12 overflow-hidden rounded-2xl">
-      <video
-        src="https://pub-f1b005fa8b8d40d390923f38752ae035.r2.dev/websitevid.mp4"
-        aria-label="HappyHangs Atmosphere"
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="w-full h-full object-cover object-center"
-      />
-    </div>
-  </div>
+
+      {/* 10.1. Video Section (Compact + Play/Pause Controls) */}
+      <section className="w-full bg-[#F3DEB3] py-12 md:py-12 px-6 md:px-12">
+
+<div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-stretch">
+
+          <div className="relative overflow-hidden rounded-2xl border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-black">
+            <video
+              ref={videoRef}
+              src="https://pub-f1b005fa8b8d40d390923f38752ae035.r2.dev/websitevid.mp4"
+              aria-label="HappyHangs Atmosphere"
+              autoPlay
+              muted
+              loop
+              playsInline
+              onClick={togglePlayPause}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+              className="w-full max-h-[420px] object-cover object-center cursor-pointer"
+            />
+
+            <button
+              type="button"
+              onClick={togglePlayPause}
+              aria-label={isPlaying ? 'Pause video' : 'Play video'}
+              aria-pressed={!isPlaying}
+              className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-black/80 hover:bg-black text-white text-xs font-bold uppercase tracking-wider px-3.5 py-2 backdrop-blur-xs transition-colors cursor-pointer"
+            >
+              {isPlaying ? (
+                <>
+                  <PauseIcon className="w-3.5 h-3.5" />
+                  <span>Pause</span>
+                </>
+              ) : (
+                <>
+                  <PlayIcon className="w-3.5 h-3.5" />
+                  <span>Play</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
       </section>
+
       {/* 10. Frequently Asked Questions Section */}
       <FaqSection />
 
@@ -487,30 +540,28 @@ function FaqSection() {
     </section>
   )
 }
-  
+
 export function CustomerReviewsSection() {
-const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   // Duplicating array for a seamless infinite loop
   const scrollReviews = [...DEMO_REVIEWS, ...DEMO_REVIEWS]
 
   return (
     <div className="w-full bg-[#ffe0ae] py-16 px-4 font-sans text-black overflow-hidden select-none">
-      
+
       {/* SECTION HEADER & OVERALL STAR RATING */}
       <div className="max-w-4xl mx-auto text-center mb-12 space-y-3">
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
           Great Minds Think Alike
         </h2>
-        
+
         {/* Main Star Rating Bar */}
         <div className="flex justify-center items-center gap-1">
           {[...Array(5)].map((_, i) => (
             <Star key={i} className="w-6 h-6 fill-amber-400 text-amber-400" />
           ))}
         </div>
-        
-       
 
         {/* Action Button */}
         <div className="pt-2">
@@ -565,7 +616,6 @@ const [isModalOpen, setIsModalOpen] = useState(false)
                 </div>
               </div>
 
-             
             </div>
           ))}
         </div>

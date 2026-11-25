@@ -7,13 +7,13 @@ export default function Footer() {
   }
 
   return (
-    <footer className="bg-[#fdbc71] text-[#1c2a2b] pt-16 pb-10 px-6 lg:px-20 border-t border-[#e2d7c9]">
+    <footer className="bg-[#492100] text-[#1c2a2b] pt-16 pb-10 px-6 lg:px-20 border-t border-[#e2d7c9]">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-10 pb-12">
         
         {/* Left Column: Logo, Description & Social Icons */}
         <div className="md:col-span-6 space-y-6">
           <div>
-            <h2 className="text-3xl font-serif tracking-widest font-bold uppercase text-[#1c2a2b]">
+            <h2 className="text-3xl font-serif tracking-widest font-bold uppercase text-[#f7f8f8]">
               HAPPYHANGS
             </h2>
             <p className="text-[10px] tracking-[0.3em] font-light text-[#5c6869] uppercase mt-1">
@@ -57,7 +57,7 @@ export default function Footer() {
 
         {/* Center Column: Navigation Links */}
         <div className="md:col-span-3 space-y-3">
-          <ul className="space-y-3 text-sm font-serif text-[#1c2a2b]">
+          <ul className="space-y-3 text-sm font-serif text-[#f9fafa]">
             <li>
               <Link to="/" className="hover:underline underline-offset-4 transition">Home</Link>
             </li>
@@ -72,7 +72,7 @@ export default function Footer() {
         {/* Right Column: Policies */}
       {/* Right Column: Policies */}
 <div className="md:col-span-3 space-y-3">
-  <ul className="space-y-3 text-sm font-serif text-[#1c2a2b]">
+  <ul className="space-y-3 text-sm font-serif text-[#f7fafa]">
     <li>
       <Link to="/policies/privacy" className="hover:underline underline-offset-4 transition">
         Privacy Policy

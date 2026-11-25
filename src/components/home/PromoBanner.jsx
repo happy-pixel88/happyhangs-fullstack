@@ -18,7 +18,7 @@ export default function PromoBanner() {
   }, [])
 
   return (
-    <div className="bg-[#f5c28b] text-black font-semibold text-xs tracking-wider py-2 text-center transition-all duration-500">
+    <div className="bg-[#492100] text-black font-semibold text-xs tracking-wider py-2 text-center transition-all duration-500">
       {ANNOUNCEMENTS[index]}
     </div>
   )
