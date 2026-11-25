@@ -439,12 +439,10 @@ export default function MidPageFeature({ r2ImageUrl }) {
         </div>
       </section>
 
-      {/* 10.1. Video Section (Compact + Play/Pause Controls) */}
-      <section className="w-full bg-[#F3DEB3] py-12 md:py-12 px-6 md:px-12">
-
-<div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-stretch">
-
-          <div className="relative overflow-hidden rounded-2xl border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-black">
+     {/* 10.1. Video Section */}
+      <section className="w-full bg-[#F3DEB3] py-12 md:py-16 px-6 md:px-12">
+        <div className="max-w-md mx-auto">
+          <div className="relative w-full rounded-2xl border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-black overflow-hidden">
             <video
               ref={videoRef}
               src="https://pub-f1b005fa8b8d40d390923f38752ae035.r2.dev/websitevid.mp4"
@@ -456,7 +454,7 @@ export default function MidPageFeature({ r2ImageUrl }) {
               onClick={togglePlayPause}
               onPlay={() => setIsPlaying(true)}
               onPause={() => setIsPlaying(false)}
-              className="w-full max-h-[420px] object-cover object-center cursor-pointer"
+              className="block w-full max-h-[460px] object-contain mx-auto cursor-pointer"
             />
 
             <button
@@ -464,16 +462,16 @@ export default function MidPageFeature({ r2ImageUrl }) {
               onClick={togglePlayPause}
               aria-label={isPlaying ? 'Pause video' : 'Play video'}
               aria-pressed={!isPlaying}
-              className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-black/80 hover:bg-black text-white text-xs font-bold uppercase tracking-wider px-3.5 py-2 backdrop-blur-xs transition-colors cursor-pointer"
+              className="absolute bottom-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-black/85 hover:bg-black text-white text-xs font-bold uppercase tracking-wider px-3.5 py-2 transition-colors cursor-pointer"
             >
               {isPlaying ? (
                 <>
-                  <PauseIcon className="w-3.5 h-3.5" />
+                  <PauseIcon className="w-3.5 h-3.5 shrink-0" />
                   <span>Pause</span>
                 </>
               ) : (
                 <>
-                  <PlayIcon className="w-3.5 h-3.5" />
+                  <PlayIcon className="w-3.5 h-3.5 shrink-0" />
                   <span>Play</span>
                 </>
               )}
